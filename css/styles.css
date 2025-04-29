@@ -1,4 +1,11 @@
-body {
+/* Base Reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 0;
@@ -14,14 +21,15 @@ body {
   }
   
   header h1 {
-    font-size: 3rem;
-    margin-bottom: 0.25rem;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
     color: #f14a4a;
   }
   
   .tagline {
     font-style: italic;
     color: #bbb;
+    margin-top: 0.5rem;
   }
   
   nav a {
@@ -40,16 +48,23 @@ body {
     color: #111;
   }
   
-  .cover {
+  .cover,
+  .comic-page {
     display: block;
     margin: 2rem auto;
-    max-width: 90%;
-    border: 3px solid #f14a4a;
-    border-radius: 8px;
+    max-width: 100%;
+    height: auto;
   }
   
   .intro {
     max-width: 700px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    text-align: center;
+  }
+  
+  .comic-reader {
+    max-width: 900px;
     margin: 2rem auto;
     padding: 0 1rem;
     text-align: center;
@@ -60,5 +75,42 @@ body {
     padding: 1rem;
     background: #1e1e1e;
     font-size: 0.9rem;
+  }
+  
+  /* === Responsive Media Queries === */
+  
+  /* Phones (up to 600px) */
+  @media (max-width: 600px) {
+    header h1 {
+      font-size: 2rem;
+    }
+  
+    .tagline {
+      font-size: 1rem;
+    }
+  
+    nav a {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.9rem;
+    }
+  
+    .intro, .comic-reader {
+      padding: 0 0.5rem;
+    }
+  
+    .cover, .comic-page {
+      border-width: 2px;
+    }
+  }
+  
+  /* Tablets (601px to 1024px) */
+  @media (max-width: 1024px) {
+    header h1 {
+      font-size: 2.2rem;
+    }
+  
+    .cover, .comic-page {
+      max-width: 95%;
+    }
   }
   
