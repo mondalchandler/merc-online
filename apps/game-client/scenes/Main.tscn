@@ -1,0 +1,15 @@
+[gd_resource type="PackedScene" format=3]
+
+[resource]
+nodes=[{
+"node": {
+"type": "Node2D",
+"name": "Main",
+"script": ExtResource("1")
+}}]
+externals=[{
+"ext_resource": {
+"type": "Script",
+"path": "res://scripts/Main.gd",
+"id": "1"
+}}]

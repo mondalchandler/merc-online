@@ -1,0 +1,6 @@
+; Engine configuration file for Godot 4.x
+config_version=5
+
+[application]
+config/name="MERC Client"
+run/main_scene="res://scenes/Main.tscn"
