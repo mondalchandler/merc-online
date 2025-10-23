@@ -1,46 +1,51 @@
 import { Room, Client } from "@colyseus/core";
 
-type V2 = { x: number, y: number };
-type Player = { id: string, pos: V2, vel: V2 };
+type V2 = { x: number; y: number };
+type Player = { id: string; pos: V2; vel: V2 };
 
-export class CityRoom extends Room<any> {
+export class CityRoom extends Room {
   maxClients = 16;
-  private players: Map<string, Player> = new Map();
-  private tickInterval: any;
+  private players = new Map<string, Player>();
+  private tickInterval?: NodeJS.Timeout;
 
-  onCreate(options: any) {
-    this.setState({}); // no schema for brevity
-    this.setPatchRate(50); // 20Hz approx
-    this.tickInterval = this.clock.setInterval(() => this.update(), 50);
+  onCreate(_options: any) {
+    this.setState({});           // (add Schema later if you like)
+    this.setPatchRate(50);       // ~20Hz
+
+    // v0.16 pattern: register message handlers in onCreate
+    this.onMessage<{ vel?: V2 }>("input", (client, message) => {
+      const p = this.players.get(client.sessionId);
+      if (p) p.vel = message?.vel ?? { x: 0, y: 0 };
+    });
+
+    // simple server tick (replace with your authoritative sim)
+    this.tickInterval = setInterval(() => this.update(), 50);
   }
 
-  onJoin(client: Client, options: any) {
-    this.players.set(client.sessionId, { id: client.sessionId, pos: {x:0, y:0}, vel:{x:0, y:0} });
+  onJoin(client: Client) {
+    this.players.set(client.sessionId, {
+      id: client.sessionId,
+      pos: { x: 0, y: 0 },
+      vel: { x: 0, y: 0 },
+    });
   }
 
-  onLeave(client: Client, consented: boolean) {
+  onLeave(client: Client) {
     this.players.delete(client.sessionId);
   }
 
   onDispose() {
-    this.clock.clear();
     if (this.tickInterval) clearInterval(this.tickInterval);
   }
 
-  // super-naive update loop; replace with authoritative sim and snapshots
-  update(){
-    for (const p of this.players.values()){
+  private update() {
+    for (const p of this.players.values()) {
       p.pos.x += p.vel.x * 0.05;
       p.pos.y += p.vel.y * 0.05;
     }
-    this.broadcast("snapshot", { t: Date.now(), players: Array.from(this.players.values()) });
-  }
-
-  // Example message handlers
-  onMessage(client: Client, type: string | number, message: any) {
-    if (type === "input") {
-      const p = this.players.get(client.sessionId);
-      if (p) p.vel = message.vel || {x:0,y:0};
-    }
+    this.broadcast("snapshot", {
+      t: Date.now(),
+      players: Array.from(this.players.values()),
+    });
   }
 }
