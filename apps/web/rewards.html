@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MERC Online — Rewards</title>
+  <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+  <header>
+    <nav class="nav">
+      <div class="brand">MERC Online</div>
+      <div class="nav-right">
+        <a class="btn" href="/comic.html" data-nav="comic">Comic</a>
+        <a class="btn" href="/game.html" data-nav="play">Play</a>
+        <a class="btn active" href="/rewards.html" data-nav="rewards">Rewards</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="main">
+    <div class="panel">
+      <h1>Chapter 1 Reward</h1>
+      <p class="muted">Simulate the end-of-chapter claim flow.</p>
+      <div class="actions">
+        <button class="btn" id="btnToken">Get Claim Token</button>
+        <button class="btn" id="btnClaim">Claim Reward</button>
+      </div>
+      <pre id="out" class="muted">Output will appear here…</pre>
+    </div>
+  </main>
+
+  <footer>© MERC</footer>
+
+  <script>
+    const API = (path) => (location.origin.includes('localhost') ? 'http://localhost:2567' : '') + path;
+    let authJWT = null;
+    let claimToken = null;
+
+    async function devLogin() {
+      const r = await fetch(API('/auth/dev-login'), {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ userId:'dev-user-1', name:'Dev User'})
+      });
+      const data = await r.json(); authJWT = data.token;
+      log('JWT acquired.');
+    }
+    async function getToken() {
+      if (!authJWT) await devLogin();
+      const r = await fetch(API('/rewards/token?chapter=1'), {
+        headers:{'Authorization':'Bearer '+authJWT}
+      });
+      const data = await r.json(); claimToken = data.token;
+      log('Claim token: ' + (claimToken ? 'ok' : 'missing'));
+    }
+    async function claim() {
+      if (!authJWT) await devLogin();
+      if (!claimToken) await getToken();
+      const r = await fetch(API('/rewards/claim'), {
+        method:'POST',
+        headers:{'Authorization':'Bearer '+authJWT,'Content-Type':'application/json'},
+        body: JSON.stringify({ token: claimToken })
+      });
+      const data = await r.json(); log(JSON.stringify(data,null,2));
+    }
+    function log(s){ document.getElementById('out').textContent = s; }
+
+    document.getElementById('btnToken').onclick = getToken;
+    document.getElementById('btnClaim').onclick = claim;
+  </script>
+</body>
+</html>

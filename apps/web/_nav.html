@@ -1,0 +1,20 @@
+<header>
+  <nav class="nav">
+    <div class="brand">MERC Online</div>
+    <div class="nav-right">
+      <a class="btn" href="/comic.html" data-nav="comic">Comic</a>
+      <a class="btn" href="/game.html"  data-nav="play">Play</a>
+      <a class="btn" href="/rewards.html" data-nav="rewards">Rewards</a>
+    </div>
+  </nav>
+</header>
+<script>
+  // highlight active tab
+  (() => {
+    const path = location.pathname.toLowerCase();
+    const map = path.includes("game") ? "play"
+            : path.includes("reward") ? "rewards"
+            : "comic";
+    document.querySelectorAll('[data-nav="'+map+'"]').forEach(a => a.classList.add('active'));
+  })();
+</script>

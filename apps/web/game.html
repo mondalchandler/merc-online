@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MERC Online — Play</title>
+  <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+  <header>
+    <nav class="nav">
+      <div class="brand">MERC Online</div>
+      <div class="nav-right">
+        <a class="btn" href="/comic.html" data-nav="comic">Comic</a>
+        <a class="btn active" href="/game.html" data-nav="play">Play</a>
+        <a class="btn" href="/rewards.html" data-nav="rewards">Rewards</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="main">
+    <div class="panel">
+      <h1>Play</h1>
+      <p class="muted">This view loads your Godot Web export. Export your build to <code>/apps/web/play/</code>.</p>
+      <iframe class="game-frame" src="/play/index.html" allowfullscreen></iframe>
+    </div>
+  </main>
+
+  <footer>© MERC</footer>
+  <script>
+    // If developing locally, Netlify dev can serve /play; otherwise ensure your export files are present.
+  </script>
+</body>
+</html>
