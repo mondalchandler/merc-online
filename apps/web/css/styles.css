@@ -1,116 +1,121 @@
-/* Base Reset */
+:root {
+  --bg: #0d0e12;
+  --panel: #14151b;
+  --border: #25262b;
+  --text: #e6e6ea;
+  --muted: #a6a7ad;
+}
+
 * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-  
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 0;
-    background: #111;
-    color: #eee;
-    line-height: 1.6;
-  }
-  
-  header {
-    background: #1e1e1e;
-    text-align: center;
-    padding: 2rem 1rem;
-  }
-  
-  header h1 {
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-    color: #f14a4a;
-  }
-  
-  .tagline {
-    font-style: italic;
-    color: #bbb;
-    margin-top: 0.5rem;
-  }
-  
-  nav a {
-    display: inline-block;
-    margin-top: 1rem;
-    color: #f14a4a;
-    text-decoration: none;
-    font-weight: bold;
-    border: 1px solid #f14a4a;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-  }
-  
-  nav a:hover {
-    background: #f14a4a;
-    color: #111;
-  }
-  
-  .cover,
-  .comic-page {
-    display: block;
-    margin: 2rem auto;
-    max-width: 100%;
-    height: auto;
-  }
-  
-  .intro {
-    max-width: 700px;
-    margin: 2rem auto;
-    padding: 0 1rem;
-    text-align: center;
-  }
-  
-  .comic-reader {
-    max-width: 900px;
-    margin: 2rem auto;
-    padding: 0 1rem;
-    text-align: center;
-  }
-  
-  footer {
-    text-align: center;
-    padding: 1rem;
-    background: #1e1e1e;
-    font-size: 0.9rem;
-  }
-  
-  /* === Responsive Media Queries === */
-  
-  /* Phones (up to 600px) */
-  @media (max-width: 600px) {
-    header h1 {
-      font-size: 2rem;
-    }
-  
-    .tagline {
-      font-size: 1rem;
-    }
-  
-    nav a {
-      padding: 0.4rem 0.8rem;
-      font-size: 0.9rem;
-    }
-  
-    .intro, .comic-reader {
-      padding: 0 0.5rem;
-    }
-  
-    .cover, .comic-page {
-      border-width: 2px;
-    }
-  }
-  
-  /* Tablets (601px to 1024px) */
-  @media (max-width: 1024px) {
-    header h1 {
-      font-size: 2.2rem;
-    }
-  
-    .cover, .comic-page {
-      max-width: 95%;
-    }
-  }
-  
+  box-sizing: border-box
+}
+
+html,
+body {
+  height: 100%
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+a {
+  color: #8be9fd;
+  text-decoration: none
+}
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(13, 14, 18, .9);
+  backdrop-filter: saturate(140%) blur(8px);
+  border-bottom: 1px solid var(--border)
+}
+
+.nav {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+}
+
+.brand {
+  font-weight: 700
+}
+
+.nav-right {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap
+}
+
+.btn {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+}
+
+.btn.active {
+  background: #1a1b22
+}
+
+.main {
+  max-width: 1100px;
+  margin: 24px auto;
+  padding: 0 20px;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+}
+
+h1,
+h2 {
+  margin: 0 0 12px
+}
+
+.muted {
+  color: var(--muted)
+}
+
+/* Game page */
+.game-frame {
+  width: 100%;
+  height: 80vh;
+  border: 0;
+  border-radius: 12px;
+  background: #000
+}
+
+/* Rewards page */
+.actions {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0 12px
+}
+
+pre {
+  background: #0e0f13;
+  border: 1px solid var(--border);
+  padding: 10px;
+  border-radius: 10px;
+  overflow: auto
+}
+
+footer {
+  max-width: 1100px;
+  margin: 24px auto;
+  padding: 0 20px 24px;
+  color: var(--muted)
+}

@@ -1,20 +1,13 @@
 <!doctype html>
 <html>
+
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8">
+  <meta http-equiv="refresh" content="0; url=/comic.html">
   <title>MERC Online</title>
-  <style>
-    body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;background:#0d0e12;color:#e6e6ea}
-    header,footer{padding:16px 24px;border-bottom:1px solid #222}
-    a{color:#8be9fd}
-    .wrap{max-width:1100px;margin:0 auto;padding:24px}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
-    .card{background:#14151b;border:1px solid #25262b;border-radius:12px;padding:16px}
-    iframe{width:100%;height:600px;border:0;border-radius:12px;background:#000}
-    .btn{display:inline-block;padding:10px 14px;border:1px solid #3b3d45;border-radius:10px;text-decoration:none;color:#e6e6ea}
-  </style>
+  <link rel="canonical" href="/comic.html">
 </head>
+
 <body>
   <header>
     <div class="wrap">
@@ -45,26 +38,27 @@
   </main>
   <footer class="wrap">© MERC</footer>
   <script>
-    const API = (path) => (location.origin.includes('localhost')? 'http://localhost:2567' : '') + path;
+    const API = (path) => (location.origin.includes('localhost') ? 'http://localhost:2567' : '') + path;
     let authJWT = null;
     let claimToken = null;
 
     async function devLogin() {
-      const r = await fetch(API('/auth/dev-login'), {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ userId: 'dev-user-1', name:'Dev User' })});
-      const data = await r.json(); authJWT = data.token; log('JWT: '+ authJWT.slice(0,24)+'...');
+      const r = await fetch(API('/auth/dev-login'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: 'dev-user-1', name: 'Dev User' }) });
+      const data = await r.json(); authJWT = data.token; log('JWT: ' + authJWT.slice(0, 24) + '...');
     }
     async function getToken() {
       if (!authJWT) await devLogin();
-      const r = await fetch(API('/rewards/token?chapter=1'), {headers:{'Authorization': 'Bearer '+authJWT}});
-      const data = await r.json(); claimToken = data.token; log('Claim token: '+ claimToken);
+      const r = await fetch(API('/rewards/token?chapter=1'), { headers: { 'Authorization': 'Bearer ' + authJWT } });
+      const data = await r.json(); claimToken = data.token; log('Claim token: ' + claimToken);
     }
     async function claim() {
       if (!authJWT) await devLogin();
       if (!claimToken) await getToken();
-      const r = await fetch(API('/rewards/claim'), {method:'POST', headers:{'Authorization':'Bearer '+authJWT, 'Content-Type':'application/json'}, body: JSON.stringify({ token: claimToken })});
-      const data = await r.json(); log(JSON.stringify(data,null,2));
+      const r = await fetch(API('/rewards/claim'), { method: 'POST', headers: { 'Authorization': 'Bearer ' + authJWT, 'Content-Type': 'application/json' }, body: JSON.stringify({ token: claimToken }) });
+      const data = await r.json(); log(JSON.stringify(data, null, 2));
     }
-    function log(s){ document.getElementById('out').textContent = s; }
+    function log(s) { document.getElementById('out').textContent = s; }
   </script>
 </body>
+
 </html>

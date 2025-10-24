@@ -6,3 +6,25 @@ dist/
 .DS_Store
 npm-debug.log*
 yarn-error.log*
+
+# Godot cache and import files
+.godot/
+.import/
+.godot/editor/
+.godot/shader_cache/
+*.vulkan.cache
+*.godot/editor_settings-*.tres
+*.cfg
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+
+# Build / export outputs
+export_presets.cfg~
+*.exe
+*.pck
+*.zip
+*.html
+*.wasm
+*.import

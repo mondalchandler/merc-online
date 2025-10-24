@@ -1,15 +1,6 @@
-[gd_resource type="PackedScene" format=3]
+[gd_scene load_steps=2 format=3 uid="uid://bpn3ollne4ok7"]
 
-[resource]
-nodes=[{
-"node": {
-"type": "Node2D",
-"name": "Main",
-"script": ExtResource("1")
-}}]
-externals=[{
-"ext_resource": {
-"type": "Script",
-"path": "res://scripts/Main.gd",
-"id": "1"
-}}]
+[ext_resource type="Script" path="res://scripts/Main.gd" id="1"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1")
