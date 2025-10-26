@@ -1,11 +1,13 @@
 <!doctype html>
 <html>
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MERC Online — Rewards</title>
   <link rel="stylesheet" href="/css/styles.css">
 </head>
+
 <body>
   <header>
     <nav class="nav">
@@ -23,8 +25,8 @@
       <h1>Chapter 1 Reward</h1>
       <p class="muted">Simulate the end-of-chapter claim flow.</p>
       <div class="actions">
-        <button class="btn" id="btnToken">Get Claim Token</button>
-        <button class="btn" id="btnClaim">Claim Reward</button>
+        <button class="btn" id="btnToken" style="color:black;">Get Claim Token</button>
+        <button class="btn" id="btnClaim" style="color:black;">Claim Reward</button>
       </div>
       <pre id="out" class="muted">Output will appear here…</pre>
     </div>
@@ -33,41 +35,87 @@
   <footer>© MERC</footer>
 
   <script>
-    const API = (path) => (location.origin.includes('localhost') ? 'http://localhost:2567' : '') + path;
+    const API = (path) => {
+      // local dev: talk to game server on :2567
+      const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+      return (isLocal ? 'http://localhost:2567' : '') + path;
+    };
+
     let authJWT = null;
     let claimToken = null;
 
     async function devLogin() {
       const r = await fetch(API('/auth/dev-login'), {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ userId:'dev-user-1', name:'Dev User'})
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: 'dev-user-1', name: 'Dev User' })
       });
-      const data = await r.json(); authJWT = data.token;
-      log('JWT acquired.');
+      if (!r.ok) {
+        log('Login failed: ' + r.status);
+        return;
+      }
+      const data = await r.json();
+      authJWT = data.token;
+      log('JWT acquired. Ready to request claim token.');
     }
+
     async function getToken() {
-      if (!authJWT) await devLogin();
+      if (!authJWT) {
+        await devLogin();
+        if (!authJWT) return;
+      }
       const r = await fetch(API('/rewards/token?chapter=1'), {
-        headers:{'Authorization':'Bearer '+authJWT}
+        headers: { 'Authorization': 'Bearer ' + authJWT }
       });
-      const data = await r.json(); claimToken = data.token;
-      log('Claim token: ' + (claimToken ? 'ok' : 'missing'));
+      if (!r.ok) {
+        log('Get token failed: ' + r.status);
+        return;
+      }
+      const data = await r.json();
+      claimToken = data.token;
+      if (claimToken) {
+        log('Claim token acquired. You can now redeem.');
+      } else {
+        log('No claim token returned.');
+      }
     }
+
     async function claim() {
-      if (!authJWT) await devLogin();
-      if (!claimToken) await getToken();
+      if (!authJWT) {
+        log('You are not logged in. Click "Get Claim Token" first.');
+        return;
+      }
+      if (!claimToken) {
+        log('No claim token cached. Click "Get Claim Token" first.');
+        return;
+      }
+
       const r = await fetch(API('/rewards/claim'), {
-        method:'POST',
-        headers:{'Authorization':'Bearer '+authJWT,'Content-Type':'application/json'},
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + authJWT,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ token: claimToken })
       });
-      const data = await r.json(); log(JSON.stringify(data,null,2));
+
+      if (!r.ok) {
+        log('Claim failed: ' + r.status);
+        return;
+      }
+
+      const data = await r.json();
+      log(JSON.stringify(data, null, 2));
     }
-    function log(s){ document.getElementById('out').textContent = s; }
+
+    function log(s) {
+      document.getElementById('out').textContent = s;
+    }
 
     document.getElementById('btnToken').onclick = getToken;
     document.getElementById('btnClaim').onclick = claim;
   </script>
+
 </body>
+
 </html>
