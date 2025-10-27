@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://bpn3ollne4ok7"]
+[gd_scene load_steps=11 format=3 uid="uid://bpn3ollne4ok7"]
 
 [ext_resource type="Script" path="res://scripts/Main.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/NetworkManager.gd" id="2_4lj2y"]
@@ -1723,8 +1723,6 @@ texture = ExtResource("3_uuj56")
 [sub_resource type="TileSet" id="TileSet_cfxoe"]
 sources/0 = SubResource("TileSetAtlasSource_8nqfs")
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_7thpb"]
-
 [sub_resource type="CircleShape2D" id="CircleShape2D_g8y4u"]
 
 [node name="Main" type="Node2D"]
@@ -1744,7 +1742,6 @@ layer_0/tile_data = PackedInt32Array(-262144, 1179648, 1, -196608, 1179648, 2, -
 script = ExtResource("3_6x7xh")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="World/BuildingZone"]
-shape = SubResource("RectangleShape2D_7thpb")
 
 [node name="Player" type="CharacterBody2D" parent="." groups=["player"]]
 script = ExtResource("3_78bxd")
