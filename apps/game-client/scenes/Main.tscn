@@ -1756,6 +1756,7 @@ texture = ExtResource("5_rxx66")
 [node name="Muzzle" type="Marker2D" parent="Player/Gun"]
 
 [node name="Camera2D" type="Camera2D" parent="Player"]
+zoom = Vector2(2, 2)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
 shape = SubResource("CircleShape2D_g8y4u")
