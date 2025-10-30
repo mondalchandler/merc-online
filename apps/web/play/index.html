@@ -78,52 +78,42 @@ body {
 		</style>
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
 <link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
-<!-- Colyseus client + bridge -->
 <script src="https://unpkg.com/colyseus.js@^0.15/dist/colyseus.js"></script>
 <script>
-(function () {
-  const API_WS = "ws://localhost:2567"; // change for prod
+(function(){
+  const API_WS = "ws://localhost:2567";      // change for prod
   let client = null, room = null;
 
-  // Godot 4 exposes a global named 'GodotRuntime' once the game is ready.
-  // If it's not ready yet, we'll buffer calls and flush later.
-  let godotReady = false;
-  let bufferedCalls = [];
-  function callGodot(nodeName, method, arg) {
-    if (window.GodotRuntime && window.GodotRuntime.call) {
-      window.GodotRuntime.call(nodeName, method, arg);
-    } else {
-      bufferedCalls.push([nodeName, method, arg]);
-    }
-  }
-  window.addEventListener("godot-runtime-ready", (e) => {
-    window.GodotRuntime = e.detail.instance;
-    godotReady = true;
-    bufferedCalls.forEach(([n, m, a]) => window.GodotRuntime.call(n, m, a));
-    bufferedCalls = [];
-  });
-
   window.MercNet = {
-    async join(jwt, userId) {
+    __lastSnapshot: "[]",                     // Godot will poll this
+
+    async join(jwt, userId){
       if (!client) client = new Colyseus.Client(API_WS);
       room = await client.joinOrCreate("city", { jwt, userId });
+      console.log("[MercNet] joined city as", userId);
       return true;
     },
-    onPlayers(godotMethodName) {
+
+    _emitSnapshot(){
       if (!room) return;
-      const send = () => {
-        const arr = [];
-        room.state.players.forEach((p, key) => {
-          arr.push({ id: key, x: p.x, y: p.y, rot: p.rot, name: p.name });
-        });
-        callGodot("NetworkManager", godotMethodName, JSON.stringify(arr));
-      };
-      room.state.players.onAdd = send;
-      room.state.players.onChange = send;
-      room.state.players.onRemove = send;
-      send();
+      const arr = [];
+      room.state.players.forEach((p, key) => {
+        arr.push({ id: key, x: p.x, y: p.y, rot: p.rot, name: p.name });
+      });
+      // Store for Godot to read
+      window.MercNet.__lastSnapshot = JSON.stringify(arr);
     },
-    move(x, y, rot) {
+
+    startSnapshotFeed(){
+      if (!room) return;
+      // Update on changes
+      room.state.players.onAdd    = window.MercNet._emitSnapshot;
+      room.state.players.onChange = window.MercNet._emitSnapshot;
+      room.state.players.onRemove = window.MercNet._emitSnapshot;
+      window.MercNet._emitSnapshot();
+    },
+
+    move(x,y,rot){
       if (room) room.send("move", { x, y, rot });
     }
   };
@@ -148,7 +138,7 @@ body {
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":513168,"index.wasm":43016933},"focusCanvas":true,"gdextensionLibs":[]};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":513456,"index.wasm":43016933},"focusCanvas":true,"gdextensionLibs":[]};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 

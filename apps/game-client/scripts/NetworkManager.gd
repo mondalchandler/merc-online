@@ -6,8 +6,9 @@ var user_id: String = ""
 var api_base: String = "http://localhost:2567"
 const AUTH_PATH := "user://auth.json"
 
-@onready var player: Node2D = $"../Player" # adjust if needed
-var _send_accum := 0.0 # throttle network sends
+@onready var player: Node2D = $"../Player"
+var _send_accum := 0.0
+var _snap_timer: Timer
 
 func _ready() -> void:
 	print("NetworkManager ready")
@@ -19,24 +20,23 @@ func _ready() -> void:
 		join_city_room()
 
 func _physics_process(delta: float) -> void:
-	# Throttle: send ~10Hz
+	# throttle movement sends (~10Hz)
 	_send_accum += delta
 	if _send_accum >= 0.1:
 		_send_accum = 0.0
 		_send_my_transform()
 
 func _send_my_transform() -> void:
-	if not OS.has_feature("JavaScript"):
-		return
-	if player == null:
-		return
+	# only available on Web export
+	if not OS.has_feature("web"): return
+	if player == null: return
 	JavaScriptBridge.eval(
-	"window.MercNet.move(%s,%s,%s)" % [
-		str(player.global_position.x),
-		str(player.global_position.y),
-		str(player.rotation)
-	]
-)
+		"window.MercNet.move(%s,%s,%s)" % [
+			str(player.global_position.x),
+			str(player.global_position.y),
+			str(player.rotation)
+		]
+	)
 
 # ---------- auth + storage ----------
 
@@ -100,26 +100,32 @@ func join_city_room() -> void:
 	if jwt == "":
 		push_error("No JWT yet, can't join room."); return
 
-	if OS.has_feature("JavaScript"):
-		# pass token + user_id into the bridge join
-		var js = "window.MercNet.join('%s','%s')" % [jwt, user_id]
-		var ok = JavaScriptBridge.eval(js, true)
+	if OS.has_feature("web"):
+		var ok: bool = bool(JavaScriptBridge.eval("window.MercNet.join('%s','%s')" % [jwt, user_id], true))
 		if ok:
-			# register snapshot callback
-			JavaScriptBridge.eval("window.MercNet.onPlayers('_snapshot_from_js')")
 			print("Joined 'city' via JS bridge as ", user_id)
+			# start JS-side snapshot feed
+			JavaScriptBridge.eval("window.MercNet.startSnapshotFeed()")
+			# poll snapshots at 10Hz
+			_snap_timer = Timer.new()
+			_snap_timer.wait_time = 0.1
+			_snap_timer.autostart = true
+			_snap_timer.timeout.connect(_poll_snapshot)
+			add_child(_snap_timer)
 		else:
 			push_error("Bridge join failed")
 	else:
-		# Editor/Desktop path (no JS bridge). We'll add native client later.
 		print("Non-web build: skipping bridge join for now.")
 
-# Called by JS bridge with a JSON array of players (excluding local is fine)
-# [{ id, x, y, rot, name }, ...]
+func _poll_snapshot() -> void:
+	if not OS.has_feature("web"): return
+	var json: String = str(JavaScriptBridge.eval("window.MercNet.__lastSnapshot", true))
+	if json != "":
+		_snapshot_from_js(json)
+
 func _snapshot_from_js(json: String) -> void:
 	var arr = JSON.parse_string(json)
 	if typeof(arr) != TYPE_ARRAY:
 		return
-	# TODO: you can spawn/update remote avatars here.
-	# For now, just log first item occasionally:
-	# print("Remote snapshot (count=", arr.size(), ")")
+	# TODO: update/create remote avatars; for now:
+	# print("snapshot count=", arr.size())
