@@ -1,29 +1,40 @@
-import { Server } from "@colyseus/core";
-import { WebSocketTransport } from "@colyseus/ws-transport";
 import express from "express";
 import cors from "cors";
-import jwt from "jsonwebtoken";
+import { createServer } from "http";
+import { Server } from "@colyseus/core";
+import { WebSocketTransport } from "@colyseus/ws-transport";
 
-import { cityRouter } from "./routes/city.js";
-import { rewardsRouter } from "./routes/rewards.js";
-import { authRouter, authMiddleware } from "./routes/auth.js";
-import { CityRoom } from "./rooms/CityRoom.js";
+import { authRouter } from "./routes/auth";
+import { CityRoom } from "./rooms/CityRoom";
+import { getCityRoomRef } from "./rooms/roomRegistry";
+
+const PORT = Number(process.env.PORT || 2567);
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 app.use("/auth", authRouter);
-app.use("/rewards", authMiddleware, rewardsRouter);
-app.use("/city", authMiddleware, cityRouter);
 
-const port = Number(process.env.PORT || 2567);
-const httpServer = app.listen(port, () => console.log(`HTTP listening on :${port}`));
+app.get("/debug/state", (_req, res) => {
+  const room = getCityRoomRef();
+  if (!room) return res.json({ error: "no city room active" });
+  const state = room.state?.toJSON ? room.state.toJSON() : null;
+  if (state) return res.json(state);
 
-const server = new Server({
-  transport: new WebSocketTransport({ server: httpServer }),
+  const players: any[] = [];
+  room.state.players.forEach((p: any, key: string) => {
+    players.push({ id: p.id ?? key, name: p.name, x: p.x, y: p.y, rot: p.rot });
+  });
+  return res.json({ count: players.length, players });
 });
 
-// v0.16: this overload is (name, roomClass)
-server.define("city", CityRoom);
-console.log("Colyseus room 'city' defined");
+const httpServer = createServer(app);
+const gameServer = new Server({ transport: new WebSocketTransport({ server: httpServer }) });
+
+gameServer.define("city", CityRoom);
+
+gameServer.listen(PORT).then(() => {
+  console.log("Colyseus: Listening for connections");
+  console.log(`HTTP listening on :${PORT}`);
+});

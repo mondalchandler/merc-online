@@ -45,18 +45,22 @@
     let claimToken = null;
 
     async function devLogin() {
+      // generate a random guest ID for now
+      const guestId = "guest_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
+
       const r = await fetch(API('/auth/dev-login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: 'dev-user-1', name: 'Dev User' })
+        body: JSON.stringify({ userId: guestId, name: 'Guest User' })
       });
+
       if (!r.ok) {
         log('Login failed: ' + r.status);
         return;
       }
       const data = await r.json();
       authJWT = data.token;
-      log('JWT acquired. Ready to request claim token.');
+      log(`JWT acquired for ${guestId}`);
     }
 
     async function getToken() {

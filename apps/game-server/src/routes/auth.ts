@@ -5,8 +5,10 @@ export const authRouter = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret_change_me";
 
 authRouter.post("/dev-login", (req: Request, res: Response) => {
-  const { userId, name } = (req.body as any) || {};
-  if (!userId) return res.status(400).json({ error: "userId required" });
+  let { userId, name } = (req.body as any) || {};
+  if (!userId) {
+    userId = `guest_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+  }
   const token = jwt.sign(
     { sub: userId, name },
     JWT_SECRET,

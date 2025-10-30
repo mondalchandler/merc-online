@@ -12,6 +12,7 @@
     "@colyseus/core": "^0.16.5",
     "@colyseus/schema": "^3.0.65",
     "@colyseus/ws-transport": "^0.16.5",
+    "colyseus.js": "^0.16.22",
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2"

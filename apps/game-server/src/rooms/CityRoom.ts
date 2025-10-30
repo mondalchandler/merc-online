@@ -1,51 +1,44 @@
 import { Room, Client } from "@colyseus/core";
+import { CityState, PlayerState } from "./state/GameState";
+import { setCityRoomRef, clearCityRoomRef } from "./roomRegistry";
 
-type V2 = { x: number; y: number };
-type Player = { id: string; pos: V2; vel: V2 };
+type MoveMsg = { x?: number; y?: number; rot?: number; dx?: number; dy?: number };
 
-export class CityRoom extends Room {
-  maxClients = 16;
-  private players = new Map<string, Player>();
-  private tickInterval?: NodeJS.Timeout;
-
+export class CityRoom extends Room<CityState> {
   onCreate(_options: any) {
-    this.setState({});           // (add Schema later if you like)
-    this.setPatchRate(50);       // ~20Hz
+    this.setState(new CityState());
+    setCityRoomRef(this);
 
-    // v0.16 pattern: register message handlers in onCreate
-    this.onMessage<{ vel?: V2 }>("input", (client, message) => {
-      const p = this.players.get(client.sessionId);
-      if (p) p.vel = message?.vel ?? { x: 0, y: 0 };
+    this.onMessage<MoveMsg>("move", (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      if (!p) return;
+
+      if (typeof msg.x === "number") p.x = msg.x;
+      if (typeof msg.y === "number") p.y = msg.y;
+      if (typeof msg.rot === "number") p.rot = msg.rot;
+      if (typeof msg.dx === "number") p.x += msg.dx;
+      if (typeof msg.dy === "number") p.y += msg.dy;
+
+      p.lastMoveAt = Date.now();
     });
-
-    // simple server tick (replace with your authoritative sim)
-    this.tickInterval = setInterval(() => this.update(), 50);
   }
 
-  onJoin(client: Client) {
-    this.players.set(client.sessionId, {
-      id: client.sessionId,
-      pos: { x: 0, y: 0 },
-      vel: { x: 0, y: 0 },
-    });
+  onJoin(client: Client, options: any) {
+    const p = new PlayerState();
+    p.id = client.sessionId;
+    p.name = options?.name || options?.userId || "guest";
+    p.x = Math.floor(Math.random() * 10) * 16;
+    p.y = Math.floor(Math.random() * 10) * 16;
+    this.state.players.set(client.sessionId, p);
+    this.state.count = this.clients.length;
   }
 
   onLeave(client: Client) {
-    this.players.delete(client.sessionId);
+    this.state.players.delete(client.sessionId);
+    this.state.count = this.clients.length;
   }
 
   onDispose() {
-    if (this.tickInterval) clearInterval(this.tickInterval);
-  }
-
-  private update() {
-    for (const p of this.players.values()) {
-      p.pos.x += p.vel.x * 0.05;
-      p.pos.y += p.vel.y * 0.05;
-    }
-    this.broadcast("snapshot", {
-      t: Date.now(),
-      players: Array.from(this.players.values()),
-    });
+    clearCityRoomRef(this);
   }
 }
