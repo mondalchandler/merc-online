@@ -101,7 +101,7 @@ func join_city_room() -> void:
 		push_error("No JWT yet, can't join room."); return
 
 	if OS.has_feature("web"):
-		var ok: bool = bool(JavaScriptBridge.eval("window.MercNet.join('%s','%s')" % [jwt, user_id], true))
+		var ok: bool = (JavaScriptBridge.eval("window.MercNet.join('%s','%s')" % [jwt, user_id], true) == true)
 		if ok:
 			print("Joined 'city' via JS bridge as ", user_id)
 			# start JS-side snapshot feed

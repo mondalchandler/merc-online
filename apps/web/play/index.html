@@ -78,42 +78,53 @@ body {
 		</style>
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
 <link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
-<script src="https://unpkg.com/colyseus.js@^0.15/dist/colyseus.js"></script>
+<!-- Load Colyseus 0.16 client (ESM) and expose it on window -->
+<script type="module">
+  import { Client } from "https://esm.sh/colyseus.js@0.16.5";
+  window.ColyseusClient = Client;
+</script>
+
 <script>
-(function(){
-  const API_WS = "ws://localhost:2567";      // change for prod
+(function () {
+  const API_WS = "ws://localhost:2567";
   let client = null, room = null;
 
-  window.MercNet = {
-    __lastSnapshot: "[]",                     // Godot will poll this
+  async function ensureClient() {
+    if (!window.ColyseusClient) {
+      throw new Error("Colyseus ESM client not loaded yet.");
+    }
+    if (!client) client = new window.ColyseusClient(API_WS);
+  }
 
-    async join(jwt, userId){
-      if (!client) client = new Colyseus.Client(API_WS);
-      room = await client.joinOrCreate("city", { jwt, userId });
+  window.MercNet = {
+    __lastSnapshot: "[]",
+
+    async join(jwt, userId) {
+      await ensureClient();
+      room = await client.joinOrCreate("city", { jwt, userId }); // 0.16 API
       console.log("[MercNet] joined city as", userId);
       return true;
     },
 
-    _emitSnapshot(){
-      if (!room) return;
+    _emitSnapshot() {
+      if (!room || !room.state || !room.state.players) return;
       const arr = [];
       room.state.players.forEach((p, key) => {
         arr.push({ id: key, x: p.x, y: p.y, rot: p.rot, name: p.name });
       });
-      // Store for Godot to read
       window.MercNet.__lastSnapshot = JSON.stringify(arr);
     },
 
-    startSnapshotFeed(){
-      if (!room) return;
-      // Update on changes
-      room.state.players.onAdd    = window.MercNet._emitSnapshot;
-      room.state.players.onChange = window.MercNet._emitSnapshot;
-      room.state.players.onRemove = window.MercNet._emitSnapshot;
+    startSnapshotFeed() {
+      if (!room || !room.state || !room.state.players) return;
+      const players = room.state.players;
+      players.onAdd    = window.MercNet._emitSnapshot;
+      players.onChange = window.MercNet._emitSnapshot;
+      players.onRemove = window.MercNet._emitSnapshot;
       window.MercNet._emitSnapshot();
     },
 
-    move(x,y,rot){
+    move(x, y, rot) {
       if (room) room.send("move", { x, y, rot });
     }
   };
